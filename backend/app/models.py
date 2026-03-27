@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from sqlalchemy import Column, Integer, String, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -9,7 +9,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     daily_limits = relationship("DailyLimit", back_populates="user", cascade="all, delete-orphan")
     search_history = relationship("SearchHistory", back_populates="user", cascade="all, delete-orphan")
 
@@ -27,5 +27,5 @@ class SearchHistory(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     query = Column(String, nullable=False)
     results_count = Column(Integer, default=0)
-    searched_at = Column(DateTime, default=datetime.utcnow)
+    searched_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     user = relationship("User", back_populates="search_history")

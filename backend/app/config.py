@@ -7,7 +7,6 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./metabuscador.db"
     daily_search_limit: int = 50
 
-    class Config:
-        env_file = ".env"
+    model_config = {"env_file": ".env"}
 
 settings = Settings()
