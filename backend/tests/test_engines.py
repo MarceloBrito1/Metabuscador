@@ -143,10 +143,8 @@ class TestSearchDuckDuckGo:
             results = await search_duckduckgo("python")
 
         assert len(results) == 3
-        urls = [r.url for r in results]
-        assert "https://nested.com/a" in urls
-        assert "https://nested.com/b" in urls
-        assert "https://top.com" in urls
+        urls = {r.url for r in results}
+        assert urls == {"https://nested.com/a", "https://nested.com/b", "https://top.com"}
 
     async def test_single_sentence_text_has_empty_snippet(self):
         data = {

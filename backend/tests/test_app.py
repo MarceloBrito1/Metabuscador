@@ -157,9 +157,9 @@ class TestSearchEndpointSuccess:
         with patch("app.aggregate_results", return_value=raw):
             response = await client.get("/search?q=python&user_id=user1")
         data = response.json()
-        urls = [r["url"] for r in data["results"]]
+        urls = {r["url"] for r in data["results"]}
         assert "https://doubleclick.net/ad" not in urls
-        assert "https://example.com" in urls
+        assert urls == {"https://example.com"}
 
     async def test_filters_applied_duplicates_removed(self, client):
         raw = [
