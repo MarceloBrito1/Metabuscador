@@ -1,12 +1,20 @@
 import os
+from enum import Enum
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from engines import aggregate_results
 from filters import clean_results
-from profiles import apply_profile
+from profiles import PROFILES, apply_profile
 from usage import DAILY_LIMIT, check_limit, get_usage, increment_usage
+
+
+class Profile(str, Enum):
+    general = "general"
+    scientific = "scientific"
+    journalistic = "journalistic"
+    shopping = "shopping"
 
 app = FastAPI(
     title="Metabuscador Limpo",
@@ -25,7 +33,7 @@ app.add_middleware(
 @app.get("/search")
 async def search(
     q: str = Query(..., min_length=1, description="Search query"),
-    profile: str = Query("general", description="Search profile (scientific, journalistic, shopping, general)"),
+    profile: Profile = Query(Profile.general, description="Search profile (scientific, journalistic, shopping, general)"),
     user_id: str = Query("anonymous", description="User identifier for rate limiting"),
 ):
     """Perform a meta-search across all configured engines.
@@ -55,7 +63,7 @@ async def search(
     )
 
     cleaned = clean_results(raw_results)
-    profiled = apply_profile(cleaned, profile)
+    profiled = apply_profile(cleaned, profile.value)
 
     usage_count = increment_usage(user_id)
     remaining = max(0, DAILY_LIMIT - usage_count)
@@ -69,7 +77,7 @@ async def search(
             }
             for r in profiled
         ],
-        "profile": profile,
+        "profile": profile.value,
         "count": usage_count,
         "remaining": remaining,
     }

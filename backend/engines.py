@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from urllib.parse import quote_plus
 
 import httpx
@@ -10,6 +11,7 @@ _DDG_ENDPOINT = "https://api.duckduckgo.com/"
 _GOOGLE_ENDPOINT = "https://www.googleapis.com/customsearch/v1"
 
 _TIMEOUT = httpx.Timeout(10.0)
+_log = logging.getLogger(__name__)
 
 
 async def search_bing(query: str, api_key: str | None = None) -> list[SearchResult]:
@@ -138,8 +140,7 @@ async def aggregate_results(
     combined: list[SearchResult] = []
     for batch in (bing_results, ddg_results, google_results):
         if isinstance(batch, Exception):
-            # Log but do not raise — partial results are better than nothing
-            print(f"[engines] engine error: {batch!r}")
+            _log.warning("Engine error: %r", batch)
         else:
             combined.extend(batch)
 

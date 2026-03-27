@@ -38,7 +38,7 @@ def _normalize_url(url: str) -> str:
     return normalized
 
 
-def _get_domain(url: str) -> str:
+def get_domain(url: str) -> str:
     """Return the bare domain (without www.) from a URL."""
     host = urlparse(url.lower()).netloc
     return host.removeprefix("www.")
@@ -62,7 +62,7 @@ def remove_ads(results: list[SearchResult]) -> list[SearchResult]:
     for result in results:
         if result.is_ad:
             continue
-        if _get_domain(result.url) in KNOWN_AD_DOMAINS:
+        if get_domain(result.url) in KNOWN_AD_DOMAINS:
             continue
         clean.append(result)
     return clean

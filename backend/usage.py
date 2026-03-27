@@ -1,17 +1,20 @@
+import threading
 from datetime import date
 
 DAILY_LIMIT: int = 100
 
 # In-memory store: { user_id: {"count": int, "date": date} }
 _usage: dict[str, dict] = {}
+_lock = threading.Lock()
 
 
 def get_usage(user_id: str) -> int:
     """Return today's search count for *user_id* (0 if unknown or stale date)."""
-    entry = _usage.get(user_id)
-    if entry is None or entry["date"] != date.today():
-        return 0
-    return entry["count"]
+    with _lock:
+        entry = _usage.get(user_id)
+        if entry is None or entry["date"] != date.today():
+            return 0
+        return entry["count"]
 
 
 def increment_usage(user_id: str) -> int:
@@ -20,14 +23,13 @@ def increment_usage(user_id: str) -> int:
     Automatically resets the counter when the calendar date has changed.
     """
     today = date.today()
-    entry = _usage.get(user_id)
-
-    if entry is None or entry["date"] != today:
-        _usage[user_id] = {"count": 1, "date": today}
-    else:
-        _usage[user_id]["count"] += 1
-
-    return _usage[user_id]["count"]
+    with _lock:
+        entry = _usage.get(user_id)
+        if entry is None or entry["date"] != today:
+            _usage[user_id] = {"count": 1, "date": today}
+        else:
+            _usage[user_id]["count"] += 1
+        return _usage[user_id]["count"]
 
 
 def check_limit(user_id: str) -> bool:
@@ -37,4 +39,5 @@ def check_limit(user_id: str) -> bool:
 
 def reset_usage(user_id: str) -> None:
     """Reset the usage counter for *user_id* (for testing / admin purposes)."""
-    _usage.pop(user_id, None)
+    with _lock:
+        _usage.pop(user_id, None)

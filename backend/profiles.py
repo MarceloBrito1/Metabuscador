@@ -1,6 +1,4 @@
-from urllib.parse import urlparse
-
-from filters import SearchResult
+from filters import SearchResult, get_domain
 
 PROFILES: dict[str, dict] = {
     "scientific": {
@@ -38,12 +36,6 @@ PROFILES: dict[str, dict] = {
         "boost_score": 10,
     },
 }
-
-
-def get_domain(url: str) -> str:
-    """Extract bare domain (without www.) from a URL."""
-    host = urlparse(url.lower()).netloc
-    return host.removeprefix("www.")
 
 
 def score_result(result: SearchResult, profile: str) -> int:
